@@ -29,16 +29,21 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{env.AWS_REGION}}
-    - name: Install kubectl
-      run: |
-        curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.5/2024-01-04/bin/linux/amd64/kubectl
-        chmod +x ./kubectl
-        mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
-        kubectl version --client
+    # - name: Install kubectl
+    #   run: |
+    #     curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.5/2024-01-04/bin/linux/amd64/kubectl
+    #     chmod +x ./kubectl
+    #     mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+    #     kubectl version --client
     - name: Configure ArgoCD CLI
       run: |
         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
         chmod +x /usr/local/bin/argocd
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v2.0
+      with:
+        version: 'v1.28.0' # default is latest stable
+      id: install
     ### Deploy ArgoCD Application, only run if application file was updated
     - uses: dorny/paths-filter@v2
       id: changes
@@ -48,6 +53,7 @@ jobs:
             - 'argocd/**'
     - name: Deploy ArgoCD application in Staging
       run: |
+        echo aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_STG }} --region ${{ env.AWS_REGION }}
         aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_STG }} --region ${{ env.AWS_REGION }}
         yq '.spec.source.helm.valueFiles[1] |= sub("{{var.STAGE}}"; "stg")' argocd/application.template.yaml > argocd/application.yaml
         kubectl apply -f argocd/application.yaml
