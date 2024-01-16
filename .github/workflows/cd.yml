@@ -29,6 +29,10 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{env.AWS_REGION}}
+    - name: Configure ArgoCD CLI
+      run: |
+        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
     ### Deploy ArgoCD Application, only run if application file was updated
     - uses: dorny/paths-filter@v2
       id: changes
