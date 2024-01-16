@@ -1,0 +1,5 @@
+image:
+  repository: 561062709443.dkr.ecr.us-east-1.amazonaws.com/nginx
+  tag: 1.1.0-rc.21
+config:
+  replicaCount: 2

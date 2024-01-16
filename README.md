@@ -1,1 +1,1 @@
-# sample-argocd-nginx-deployment
+# sample-argocd-app-deployments
