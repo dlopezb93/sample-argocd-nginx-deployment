@@ -1,5 +1,5 @@
 image:
   repository: 561062709443.dkr.ecr.us-east-1.amazonaws.com/nginx
-  tag: latest
+  tag: 1.0.0
 config:
   replicaCount: 3
