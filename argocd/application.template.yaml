@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dlopezb93/sample-argocd-nginx.git
+    repoURL: https://github.com/dlopezb93/sample-argocd-nginx-deployment.git
     targetRevision: main
     path: charts/nginx
     helm:
