@@ -31,11 +31,6 @@ jobs:
       run: |
         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
         chmod +x /usr/local/bin/argocd
-    # - name: Install kubectl
-    #   uses: azure/setup-kubectl@v2.0
-    #   with:
-    #     version: 'v1.28.0' # default is latest stable
-    #   id: install
     ### Deploy ArgoCD Application, only run if application file was updated
     - uses: dorny/paths-filter@v2
       id: changes
@@ -44,6 +39,7 @@ jobs:
           application:
             - 'argocd/**'
     - name: Deploy ArgoCD application in Staging
+      if: steps.changes.outputs.application == 'true'
       run: |
         aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_STG }} --region ${{ env.AWS_REGION }}
         yq '.spec.source.helm.valueFiles[1] |= sub("{{var.STAGE}}"; "stg")' argocd/application.template.yaml > argocd/application.yaml
@@ -52,8 +48,6 @@ jobs:
       if: steps.changes.outputs.application == 'true'
       run: |
         aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_PRD }} --region ${{ env.AWS_REGION }}
-        argocd login $(kubectl get service argocd-server -n argocd --output=jsonpath='{.status.loadBalancer.ingress[0].hostname}') --username admin --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo) --insecure
-        argocd repo add https://github.com/dlopezb93/sample-argocd-nginx-deployment --username dlopezb93 --password ${{ secrets.GIT_BOT_TOKEN }}
         yq '.spec.source.helm.valueFiles[1] |= sub("{{var.STAGE}}"; "prd")' argocd/application.template.yaml > argocd/application.yaml
         kubectl apply -f argocd/application.yaml
     # argocd repo add https://github.com/dlopezb93/sample-argocd-nginx-deployment --username dlopezb93 --password ${{ secrets.GIT_BOT_TOKEN }}
