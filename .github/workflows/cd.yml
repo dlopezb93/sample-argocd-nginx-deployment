@@ -22,23 +22,21 @@ jobs:
       uses: actions/checkout@v3
     ### Configure AWS Access
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{env.AWS_REGION}}
-    # - name: Configure ArgoCD CLI
-    #   run: |
-    #     curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    #     chmod +x /usr/local/bin/argocd
+    - name: Configure ArgoCD CLI
+      run: |
+        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
     # - name: Install kubectl
     #   uses: azure/setup-kubectl@v2.0
     #   with:
     #     version: 'v1.28.0' # default is latest stable
-    #   id: install   
+    #   id: install
     ### Deploy ArgoCD Application, only run if application file was updated
-    - name: Update kube config
-      run: aws eks update-kubeconfig --name $EKS_CLUSTER_NAME_STG --region $AWS_REGION
     - uses: dorny/paths-filter@v2
       id: changes
       with:
@@ -47,7 +45,7 @@ jobs:
             - 'argocd/**'
     - name: Deploy ArgoCD application in Staging
       run: |
-        kubectl get nodes
+        aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_STG }} --region ${{ env.AWS_REGION }}
         yq '.spec.source.helm.valueFiles[1] |= sub("{{var.STAGE}}"; "stg")' argocd/application.template.yaml > argocd/application.yaml
         kubectl apply -f argocd/application.yaml
     - name: Deploy ArgoCD application in Production
