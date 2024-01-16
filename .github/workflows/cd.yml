@@ -49,12 +49,12 @@ jobs:
     - name: Deploy ArgoCD application in Staging
       run: |
         aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_STG }} --region ${{ env.AWS_REGION }}        
-        kubectl apply -f argocd/application.yaml -f charts/nginx/values-stg.yaml
+        kubectl apply -f argocd/application.yaml -f argocd/values-stg.yaml
     - name: Deploy ArgoCD application in Production
       if: steps.changes.outputs.application == 'true'
       run: |
         aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME_PRD }} --region ${{ env.AWS_REGION }}
-        argocd login $(kubectl get service argocd-server -n argocd --output=jsonpath='{.status.loadBalancer.ingress[0].hostname}') --username admin --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo) --insecure        
+        argocd login $(kubectl get service argocd-server -n argocd --output=jsonpath='{.status.loadBalancer.ingress[0].hostname}') --username admin --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo) --insecure
         argocd repo add https://github.com/dlopezb93/sample-argocd-nginx-deployment --username dlopezb93 --password ${{ secrets.GIT_BOT_TOKEN }}
-        kubectl apply -f argocd/application.yaml -f charts/nginx/values-prd.yaml
+        kubectl apply -f argocd/application.yaml -f argocd/values-prd.yaml
     # argocd repo add https://github.com/dlopezb93/sample-argocd-nginx-deployment --username dlopezb93 --password ${{ secrets.GIT_BOT_TOKEN }}
