@@ -1,0 +1,1 @@
+# sample-argocd-nginx-deployment
