@@ -11,8 +11,8 @@ spec:
     path: charts/nginx
     helm:
       valueFiles:
-        - charts/nginx/values.yaml # the main values file
-        - charts/nginx/values-{{var.STAGE}}.yaml # this is your extra values file
+        - values.yaml # the main values file
+        - values-{{var.STAGE}}.yaml # this is your extra values file
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
